@@ -1,0 +1,62 @@
+--계정 생성
+/*
+CREATE user C##(일반사용자)아이디 IDENTIFIED BY 비밀번호
+*/
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE; -- 공통 사용자 규칙 해제
+
+CREATE user JGH_TEST IDENTIFIED BY "1234"; -- 전송(F9)
+-- 권한 부여 GRANT 권한 TO 아이디
+GRANT CREATE SESSION TO JGH_TEST;
+-- 권한 회수 REVOKE 권한 FROM 아이디
+REVOKE CREATE SESSION FROM JGH_TEST;
+-- 계정 삭제 DROP USER 아이디
+DROP USER JGH_TEST;
+
+-- DBA 계정생성
+CREATE USER JGH_DBA IDENTIFIED BY "1111";
+-- DBA 권한부여
+GRANT DBA TO JGH_DBA;
+
+
+-- 테이블 생성 CREATE TABLE 이름(컬럼명 타입); NVARCHAR2(글자수)-문자열데이터타입
+CREATE TABLE MEMBERS( -- 회원정보 테이블
+    MID NVARCHAR2(5), -- 아이디 저장, 문자 최대 5글자까지
+    MPW NVARCHAR2(5), -- 비밀번호
+    MNAME NVARCHAR2(5)
+);
+DESC MEMBERS; -- 테이블 구조 확인
+
+SELECT * FROM MEMBERS; -- 테이블 조회(*-모든것을 조회)
+INSERT INTO MEMBERS VALUES('ID01', 'PW01', '회원01');
+INSERT INTO MEMBERS VALUES('ID02', 'PW02', '회원02');
+INSERT INTO MEMBERS VALUES('ID03', 'PW03', '회원03');
+SELECT * FROM MEMBERS; 
+
+/* 테이블 생성
+CREATE TABLE 테이블이름(
+    컬러명1 데이터타입,
+    컬러명2 데이터타입,
+    컬러명3 데이터타입
+); -- Table MEMBERS이(가) 생성되었습니다.
+*/
+
+/* 데이터타입
+문자형 - 고정형: CHAR(N=글자수 N이 없으면 바이트)
+        가변형: VARCHAR(VAR가 붙으면 가변형), NVARCHAR2(5) - (N=글자수)
+숫자형 - NUMBER: 모든자리수 가능(제한x), NUMBER(3): 3자리수까지만, NUMBER(3,2): 앞자리는 3자리수 ','다음은 소수점2자리수
+날짜형 - DATE // 연-월-일 시:분:초
+            YYYY-MM-DD HH24(24:0~24시, 없으면 12시):MI:SS
+*/
+
+
+/* 제약조건 */
+
+/*
+CREATE - INSERT
+READ   - SELECT
+UPDATE - UPDATE(컬럼의 저장되어있는 데이터를 수정)
+DELETE - DELETE
+*/
+
+
+
