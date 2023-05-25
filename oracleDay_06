@@ -1,0 +1,190 @@
+-----day06
+
+-- WHERE - AND, OR
+-- 입사년도가 1981년 이고 부서번호가 30번인 직원들의 이름과, 직책을 조회
+SELECT ENAME, JOB
+FROM EMP
+WHERE TO_CHAR(HIREDATE, 'YYYY') = '1981' AND DEPTNO = 30;  -- 6명
+-- 입사년도가 1981년 이거나 부서번호가 20번인 직원들의 이름과, 직책을 조회
+SELECT ENAME, JOB
+FROM EMP
+WHERE TO_CHAR(HIREDATE, 'YYYY') = '1981' OR DEPTNO = 20; -- 11명
+-- 직책(JOB)이 'MANAGER' 이거나 'SALESMAN'인 직원들의 모든 정보를 조회
+SELECT *
+FROM EMP
+WHERE  JOB = 'MANAGER' OR JOB = 'SALESMAN';
+-- 직책(JOB)이 'MANAGER' 이거나 'SALESMAN' 'ANALYST'인 직원들의 모든 정보를 조회
+SELECT *
+FROM EMP
+WHERE  JOB IN('MANAGER','SALESMAN', 'ANALYST'); -- JOB안에 MANAGER, SALESMAN, ANALYST가 있으면
+
+-- 직책(JOB)이 'MANAGER' 이거나 'SALESMAN' 인 직원들 중에서 COMM을 받지 않는 직원의 정보 조회
+SELECT *
+FROM EMP
+WHERE JOB = 'SALESMAN' OR JOB = 'MANAGER' AND COMM IS NULL; -- OR 기준으로 왼쪽에 있는 것과 오른쪽 전체와 비교
+ --   JOB = 'SALESMAN' OR ( JOB = 'MANAGER' AND COMM IS NULL; )
+
+SELECT *
+FROM EMP
+WHERE JOB = 'MANAGER' OR JOB = 'SALESMAN' AND COMM IS NULL; -- AND면 ()로 구분 안해도됨 OR이면 ()구분
+ --   JOB = 'MANAGER' OR ( JOB = 'SALESMAN' AND COMM IS NULL; )
+ 
+SELECT *
+FROM EMP
+WHERE (JOB = 'MANAGER' OR JOB = 'SALESMAN') AND COMM IS NULL;
+
+SELECT *
+FROM EMP
+WHERE JOB IN('MANAGER', 'SALESMAN') AND COMM IS NULL;
+
+-- 테이블안에 데이터는 대소문자 구분 해야됨
+select *
+from emp
+where job = 'SALESMAN';
+-- 대문자 변환 : UPPER, 소문자 LOWER
+select *
+from emp
+where job = 'salesman';
+-- UPPER('문자데이터') >> 대문자로 변환
+select *
+from emp
+where job = UPPER('salesman');
+-- LOWER('문자데이터') >> 소문자로 변환
+select *
+from emp
+where LOWER(job) = 'salesman';
+-- LENGTH('문자') >> 문장의 길이
+SELECT ENAME, LENGTH(ENAME)
+FROM EMP;
+
+/* 그룹 함수 
+   SUM, COUNT, MAX, MIN, AVG
+*/
+-- SUM() 총합을 구하는 함수
+-- 직원들의 SAL의 총합
+SELECT SUM(SAL)
+FROM EMP;
+-- COUNT() 조회되는 레코드이 개수
+SELECT COUNT(ENAME)
+FROM EMP;
+-- MAX() 해당 컬럼의 최대값 구하는 함수
+SELECT MAX(SAL)
+FROM EMP;
+-- MIN() 해당 컬럼의 촤소값을 구하는 함수
+SELECT MIN(SAL)
+FROM EMP;
+-- AVG() 해당 컬럼의 평균값을 구하는 함수
+SELECT AVG(SAL)
+FROM EMP;
+
+-- 모든 직원의 이름과, 급여를 조회
+SELECT ENAME, SAL
+FROM EMP;
+
+-- 부서번호 급여 조회
+SELECT DEPTNO, SAL
+FROM EMP;
+
+-- 부서별 급여의 총합
+SELECT DEPTNO, SUM(SAL)
+FROM EMP
+GROUP BY DEPTNO;
+
+-- 직책별 급여의 총합
+SELECT JOB, SUM(SAL)
+FROM EMP
+GROUP BY JOB;
+
+-- 부서별 인원수
+SELECT DEPTNO, COUNT(*)
+FROM EMP
+GROUP BY DEPTNO;
+
+-- 20번 부서의 인원수 조회
+SELECT DEPTNO, COUNT(*)
+FROM EMP
+WHERE DEPTNO = 20 -- WHERE 테이블 전체를 대상으로
+GROUP BY DEPTNO;
+
+SELECT DEPTNO, COUNT(*)
+FROM EMP
+GROUP BY DEPTNO
+HAVING DEPTNO = 20; -- HAVING 나눠진 그룹을 대상으로 조건
+
+/*
+SELECT 컬럼명...
+FROM 테이블명
+WHERE 조건(필요한 레코드만 선별)
+GROUP BY 그룹을 나눌 컬럼
+HAVING 그룹 조건(그룹을 만들고 써야됨)
+ORDER BY 정령기준
+*/
+-- 부서별로 그룹을 구성하고, 인원이 4명 이상인 부서 조회
+SELECT DEPTNO, COUNT(*)
+FROM EMP
+GROUP BY DEPTNO
+HAVING COUNT(*) >= 4;
+-- 직책(JOB)별 평균 급여(SAL)가 3000이상인 직책(JOB)과 평균 급여(AVG), 인원수(COUNT) 조회
+SELECT JOB, AVG(SAL), COUNT(*)
+FROM EMP
+GROUP BY JOB
+HAVING AVG(SAL) >= 3000;
+
+-- 직책(JOB)별 평균 급여(SAL)가 3000이상인 [직책(JOB)과 평균 급여(AVG), 인원수(COUNT) 조회]
+-- 단 부서가 10, 30인 직원을 대상으로
+SELECT JOB, AVG(SAL), COUNT(*)
+FROM EMP
+WHERE DEPTNO IN(10,30)
+GROUP BY JOB
+HAVING AVG(SAL) >= 3000;
+
+SELECT JOB, AVG(SAL), COUNT(*)
+FROM EMP
+GROUP BY JOB, DEPTNO
+HAVING AVG(SAL) >= 3000 AND DEPTNO IN(10,30);
+
+-- 인원수가 5명이 이상인 부서의 부서번호, 인원수, 평균연봉 조회
+SELECT COUNT(*), DEPTNO, AVG(SAL*12)
+FROM EMP
+GROUP BY DEPTNO
+HAVING COUNT(*) >= 5;
+
+SELECT ENAME, JOB, (SAL + COMM), SAL, COMM -- 800 + NULL = NULL
+FROM EMP;
+-- NVL(컬럼명, 대체할 값)- NULL값을 다른 값으로 대체
+SELECT ENAME, JOB, (SAL + COMM), SAL, COMM, NVL(COMM, 0), (SAL+ NVL(COMM,0)) -- 800 + 0 = 800(NULL값을 0으로 대체)
+FROM EMP;
+
+/* ORDER BY : 정렬기준(제일 마지막 구문의 사용) - 오름차순(ASC)-기본값, 내림차순(DESC) */
+SELECT *
+FROM EMP
+ORDER BY ENAME; -- 직원이름 기준 오름차순 정렬 (기본값)
+
+SELECT *
+FROM EMP
+ORDER BY ENAME DESC; -- 직원이름 기준 내림차순 정렬 (DESC 필수)
+
+SELECT *
+FROM EMP
+ORDER BY JOB DESC, SAL; -- 직책 기준 내림차순 정렬 (DESC 필수)
+
+/*
+SELECT
+FROM
+WHERE
+GROUP BY
+HAVING
+ORDER BY
+*/
+-- 이름이 WARD인 직원과 같은 부서에서 근무하는 직원들의 정보 조회
+-- 1. 이름이 WARD인 직원의 부서번호 조회 -- DEPTNO :: 30
+SELECT DEPTNO
+FROM EMP
+WHERE ENAME = 'WARD'; -- 30(결과값)
+-- 2. 조회된 부서번호를 바탕으로 해당 부서의 직원정보를 조회
+-- 서브 쿼리 : 쿼리문 안에 또 다른 퀴리문이 들어가는 것
+SELECT *
+FROM EMP
+WHERE DEPTNO = (SELECT DEPTNO
+                FROM EMP
+                WHERE ENAME = 'WARD');
