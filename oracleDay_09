@@ -1,0 +1,110 @@
+-----day09
+
+/* 쇼핑몰(회원, 상품, 주문내역) */
+/* 회원정보 테아블(MEMBERS) */
+SELECT * FROM USER_TABLES; -- 현재 접속중인 계정에 있는 테이블
+SELECT * FROM USER_CONSTRAINTS; -- 현재 접속중인 계정에 있는 제약조건
+
+DROP TABLE LOGINCHECK;
+DROP TABLE MEMBERS;
+CREATE TABLE MEMBERS(
+    MID NVARCHAR2(10),      -- 회원 아이디(PRIMARY KEY)
+    MPW NVARCHAR2(20),      -- 회원 비밀번호(NOT NULL)
+    MNAME NVARCHAR2(5),     -- 회원 이름(NOT NULL)
+    MPHONE NVARCHAR2(13),   -- 회원 전화번호
+    MBIRTH DATE             -- 회원 생년월일
+);
+-- 제약 조건 부여
+ALTER TABLE MEMBERS
+ADD CONSTRAINT PK_MEM_MID PRIMARY KEY (MID)
+MODIFY MPW NOT NULL
+MODIFY MNAME NOT NULL;
+DESC MEMBERS;
+
+/* 상품정보 테이블(GOODS) */
+/* 상품코드, 상품이름, 상품가격, 상품종류, 상품재고 */
+DROP TABLE GOODS;
+CREATE TABLE GOODS(
+    GCODE NVARCHAR2(5),     -- 상품코드(PRIMARY KEY)
+    GNAME NVARCHAR2(30),    -- 상품이름(NOT NULL)
+    GPRICE NUMBER,          -- 상품가격(DEFAULT 1000)
+    GTYPE NVARCHAR2(10),    -- 상품종류
+    GSTOCK NUMBER           -- 상품재고
+);
+ALTER TABLE GOODS
+ADD CONSTRAINT PK_GOO_GCODE PRIMARY KEY (GCODE)
+MODIFY GNAME NOT NULL
+MODIFY GPRICE DEFAULT 1000;
+DESC GOODS;
+
+/* CHECK 제약
+1. GCODE 컬럼의 글자수 제약(무조건 5글자)
+2. GCODE 컬럼의 첫글자는 'G'로 시작하도록 제약
+3. GSTOCK 컬럼은 0미만의 값은 입력할 수 없도록 제약
+*/
+SELECT LENGTH('ABCD')FROM DUAL;
+SELECT SUBSTR('ABCDEFGH', 1.1) FROM DUAL;
+
+ALTER TABLE GOODS
+ADD CONSTRAINT CK_GCODE_LTH CHECK(LENGTH(GCODE) = 5);
+ALTER TABLE GOODS
+ADD CONSTRAINT CK_GCODE_FIRST CHECK(SUBSTR(GCODE, 1,1) = 'G');
+ALTER TABLE GOODS
+ADD CONSTRAINT CK_GSTOCK CHECK(GSTOCK >= 0);
+COMMIT;
+INSERT INTO GCODS(GCODE, GNAME, GPIICE,GTYPE,GSTOCK)
+VALUES ('G111','상품',10000,'종류',10)
+
+/* 주문내역(ORDERS) 
+    주문코드(PK), 회원아이디(FK-MEMBER(MID)), 상품코드(FK-GOODS(GCODE)), 주문수량, 주문일시
+*/
+CREATE TABLE ORDERS(
+    ODCODE NVARCHAR2(5),    -- 주문코드(PRIMARY KEY)
+    ODMID NVARCHAR2(10),    -- 주문자아이디(FOREIGN KEY-MEMBERS(MID))
+    ODGCODE NVARCHAR2(5),   -- 주문상품(FOREIGN KEY-GOODS(GCODE))
+    ODQTY NUMBER,           -- 주문수량
+    ODDATE DATE             -- 주문일시
+);
+ALTER TABLE ORDERS
+ADD CONSTRAINT PK_ORDERS PRIMARY KEY(ODCODE);
+ALTER TABLE ORDERS
+ADD CONSTRAINT FK_ORDERS_MID FOREIGN KEY(ODMID) REFERENCES MEMBERS(MID);
+ALTER TABLE ORDERS
+ADD CONSTRAINT FK_ORDERS_GCODE FOREIGN KEY(GCODE) REFERENCES GOODS(GCODE);
+
+INSERT INTO MEMBERS(MID, MPW, MNAME, MPHONE, MBIRTH)
+VALUES ('JGH','1234','전관호','010-4904-3741','2001-11-09');
+INSERT INTO GOODS(GCODE, GNAME, GPRICE, GTYPE, GSTOCK)
+VALUES ('G3000','아메리카노', 3000, '식품', 30);
+COMMIT;
+SELECT * FROM MEMBERS;
+SELECT * FROM GOODS
+ORDER BY GCODE;
+
+/* 쇼핑몰
+1. 회원기능 - 회원가입, 로그인기능, 내정보확인, 
+            내주문내역
+2. 상품기능 - 전체상품목록, 종류별상품목록
+             상품주문기능 */
+/* [회원가입기능]
+CONSOLE(SCANNER) >> 가입할 아이디 ~ 생년월일 입력 */
+INSERT INTO MEMBERS(MID, MPW, MNAME, MPHONE, MBIRTH)
+VALUES('입력한아이디', '입력한비밀번호', '입력한이름', '입력한전화번호', TO DATE('입력한생년월일','YYYY-MM-DD')); -- 회원가입
+/* [로그인기능] 
+CONSOLE(SCANNER) >> 로그인할 아이디, 로그인할 비밀번호 >> 입력
+*/
+SELECT *
+FROM MEMBERS
+WHERE MID = '로그인할아이디' AND MPW = '로그인할비밀번호';
+-- 레코드가 조회되면 >> 로그인 처리
+-- 래코드가 조회되지 않으면 >> 아이디/비밀번호가 일치하지 않습니다.
+
+/* [내정보확인기능] - 로그인 중인 상태 */
+SELECT *
+FROM MEMBERS
+WHERE MID = '로그인중인아이디';
+
+/* [내주문목록]기능 - 로그인 중인 상태 
+상품이름(GOODS-GNAME), 주문수량(ORDERS-ODQTY), 주문금액(GPRICE * ODQTY), 주문일(ORDER - ODDATE)
+조건 - ODMID = '로그인 중인 아이디'
+*/
